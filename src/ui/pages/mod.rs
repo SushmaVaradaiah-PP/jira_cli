@@ -1,11 +1,7 @@
-use std::rc::Rc;
+use crate::{jira_database::JiraDatabase, models::Action};
+use std::{any::Any, rc::Rc};
 
-use crate::{
-    jira_database::JiraDatabase,
-    models::{Action, Epic, Story},
-};
 use anyhow::{Result, anyhow};
-
 use itertools::Itertools;
 
 mod page_helpers;
@@ -14,10 +10,11 @@ use page_helpers::*;
 pub trait Page {
     fn draw_page(&self) -> Result<()>;
     fn handle_input(&self, input: &str) -> Result<Option<Action>>;
+    fn as_any(&self) -> &dyn Any;
 }
 
-struct HomePage {
-    db: Rc<JiraDatabase>,
+pub struct HomePage {
+    pub db: Rc<JiraDatabase>,
 }
 
 impl Page for HomePage {
@@ -59,11 +56,15 @@ impl Page for HomePage {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
-struct EpicDetail {
-    epic_id: u32,
-    db: Rc<JiraDatabase>,
+pub struct EpicDetail {
+    pub epic_id: u32,
+    pub db: Rc<JiraDatabase>,
 }
 
 impl Page for EpicDetail {
@@ -136,12 +137,16 @@ impl Page for EpicDetail {
             }
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
-struct StoryDetail {
-    epic_id: u32,
-    story_id: u32,
-    db: Rc<JiraDatabase>,
+pub struct StoryDetail {
+    pub epic_id: u32,
+    pub story_id: u32,
+    pub db: Rc<JiraDatabase>,
 }
 
 impl Page for StoryDetail {
@@ -182,12 +187,17 @@ impl Page for StoryDetail {
             _ => Ok(None),
         }
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::jira_database::test_utils::MockDB;
+    use crate::models::{Epic, Story};
     mod home_page {
         use super::*;
 
